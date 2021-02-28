@@ -1,11 +1,11 @@
 <?php
 /*
-Plugin Name: Wiry.io Cookie-less Chat, Popups and Analytics
+Plugin Name: Wiry.io - Acquire and delight customers
 Version: 1.0.0
 Plugin URI: https://wiry.io/
 Author: Wiry.io
 Author URI: https://wiry.io/
-Description: Add Wiry.io cookie-less chat, popups and analytics to your website.
+Description: Privacy-friendly live chat, popups, links and analytics.
 */
 
 if (!defined('ABSPATH')) {
@@ -16,7 +16,7 @@ if (!class_exists('WIRY_IO')) {
     class WIRY_IO
     {
 
-        var $plugin_version = '1.0.0';
+        var $plugin_version = '1.0.1';
 
         function __construct()
         {
@@ -72,6 +72,30 @@ if (!class_exists('WIRY_IO')) {
                 'wiryiosettings',
                 'wiryio_section'
             );
+
+            add_settings_field(
+                'extras',
+                'Expert configuration',
+                array($this, 'extras_render'),
+                'wiryiosettings',
+                'wiryio_section'
+            );
+
+            add_settings_field(
+                'version',
+                'Script version',
+                array($this, 'version_render'),
+                'wiryiosettings',
+                'wiryio_section'
+            );
+
+            add_settings_field(
+                'domain',
+                'Custom domain name',
+                array($this, 'domain_render'),
+                'wiryiosettings',
+                'wiryio_section'
+            );
         }
         function account_id_render()
         {
@@ -82,11 +106,38 @@ if (!class_exists('WIRY_IO')) {
         <?php
         }
 
+        function extras_render()
+        {
+            $options = get_option('wiryio_settings');
+?>
+            <textarea name='wiryio_settings[extras]'><?php echo $options['extras']; ?></textarea>
+            <p class="description"><?php printf('Expert configuration (JSON).'); ?></p>
+        <?php
+        }
+
+        function version_render()
+        {
+            $options = get_option('wiryio_settings');
+?>
+            <input type='text' name='wiryio_settings[version]' value='<?php echo $options['version']; ?>'>
+            <p class="description"><?php printf('Script version (default: 1.0)'); ?></p>
+        <?php
+        }
+
+        function domain_render()
+        {
+            $options = get_option('wiryio_settings');
+?>
+            <input type='text' name='wiryio_settings[domain]' value='<?php echo $options['domain']; ?>'>
+            <p class="description"><?php printf('Change only if you\'re using a custom domain name'); ?></p>
+        <?php
+        }
+
         function options_page()
         {
         ?>
             <div class="wrap">
-                <h2>Wiry.io Cookie-less Chat, Popups and Analytics</h2>
+                <h2>Wiry.io - Acquire and delight customers</h2>
                 <div>
                     <p>Version: <?php echo $this->plugin_version; ?></p>
                 </div>
@@ -120,30 +171,32 @@ if (!class_exists('WIRY_IO')) {
         {
             $options = get_option('wiryio_settings');
             $account_id = $options['account_id'];
-            $extras = '';
+            $domain = $options['domain'];
+            $version = $options['version'];
+			$extras = (object) array();
+			if ($options['extras']) {
+				$extras = (object) array_merge((array) $extras, (array) json_decode($options['extras']));
+			}
             if ($this->is_logged_in()) {
-                $extras .= 'WiryConfig(\'dev\', true); // do not track admin users'; 
+				$extras->doNotTrack = "strict";
             } 
+			if (!$domain) {
+				$domain = "gateway.wiryio.com";
+			}
+			if (!$version) {
+				$version = "1.0";
+			}
+			$json_extras = urlencode(json_encode($extras));
             if (isset($account_id) && !empty($account_id)) {
                 $output = <<<EOT
                 <!-- Wiry.io Plugin v{$this->plugin_version} -->
-                <script>
-                    (function(scope, targetEl, tag, baseUrl, accountId) {
-                        var fn, el, script;
-                        fn = function WiryConfig(prop, val) {
-                        scope[fn.name]._options[prop] = val;
-                        };
-                        scope[fn.name] = fn;
-                        fn._options = { accountId: accountId, baseUrl: baseUrl, load: new Date() };
-                        script = targetEl.createElement(tag);
-                        script.async = 1;
-                        script.src = baseUrl + '/static/script/bundle.js';
-                        el = targetEl.getElementsByTagName(tag)[0];
-                        (el ? el.parentNode.insertBefore(script, el) : targetEl.head.appendChild(script));
-                    })(window, document, 'script', 'https://gateway.wiryio.com', '{$account_id}');
-                    {$extras}
-                    </script>
+                <script
+                    async
+                    src="https://{$domain}/script/{$version}/{$account_id}.js"
+                    data-options="{$json_extras}"
+                ></script>
                 <!-- / Wiry.io Plugin -->
+
 EOT;
 
                 echo $output;

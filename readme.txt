@@ -2,19 +2,19 @@
 
 Contributors: wiryio
 Donate link: https://wiry.io/?ref=wordpress
-Tags: Live Chat, Popups, Analytics, Marketing, Cookieless
+Tags: Privacy-friendly live chat, popups, links and analytics.
 Requires at least: 4.2
 Requires PHP: 5.2.4
 Tested up to: 5.6
-Stable tag: 1.0.0
+Stable tag: 1.0.1
 License: GPLv2 or later
 License URI: http://www.gnu.org/licenses/gpl-2.0.html
 
-Easy-to-use live chat, popups and web analytics without cookies.
+Privacy-friendly live chat, popups, links and analytics.
 
 == Description ==
 
-Easy-to-use live chat, popups and web analytics without cookies. Compliant with GDPR, CCPA and other privacy regulations.
+Privacy-friendly, easy-to-use live chat, popups and web analytics without cookies. Compliant with GDPR, CCPA and other privacy regulations.
 
 = What is Wiry.io? = 
 
@@ -55,6 +55,10 @@ Yes. You'll need a paid subscription. Learn more at [Wiry.io](https://wiry.io/?r
 No changed needed for upgrades.
 
 == Changelog ==
+
+= 1.0.1 =
+
+* New script tag with extra options
 
 = 1.0.0 =
 
